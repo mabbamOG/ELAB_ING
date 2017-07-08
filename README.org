@@ -1,2 +1,4 @@
 * current status
-[[./screen.png]]
+[[./screens/main_window.png]]
+[[./screens/album_window.png]]
+[[./screens/cart_window.png]]
