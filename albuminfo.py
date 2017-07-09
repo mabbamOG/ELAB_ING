@@ -26,7 +26,7 @@ class AlbumInfo(Gtk.Box):
         topbox.pack_start(albumimage, expand=True, fill=True, padding=10)
         topbox.pack_start(songs, expand=True, fill=True, padding=10)
         self.add(topbox)
-        self.add(Info('price', album['price']))
+        self.add(Info('price', album['price']+'$'))
         self.add(Info('artist', album['artist']))
         self.add(Info('date', album['month']+'/'+album['year']))
         self.add(Info('genre', album['genre']))

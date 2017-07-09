@@ -26,6 +26,8 @@ class CartInfo(Gtk.Box):
             artist = self.album_database[key]['artist']
             year = self.album_database[key]['year']
             image = self.album_database[key]['image']
+            price = self.album_database[key]['price']
+            price_label = Gtk.Label(f'<big><u><b>{price}$</b></u></big>', use_markup=True)
 
             amountinput = Gtk.SpinButton.new_with_range(1,100,1)
             amountinput.set_vexpand(False)
@@ -38,6 +40,7 @@ class CartInfo(Gtk.Box):
             delete_button.connect('clicked', lambda w: self.on_delete_entry(w, key, box))
 
             box.add(ListAlbum(key,name,artist,year,image,size='small'))
+            box.add(price_label)
             box.add(amountinput)
             box.add(delete_button)
             self.add(box)
