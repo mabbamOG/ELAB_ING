@@ -1,13 +1,16 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
-from utilities import loadiconbutton
+from utilities import loadiconbutton,loadalbumimage
 
 class Info(Gtk.Box):
-    def __init__(self, key, value):
+    def __init__(self, key, value, alternate=False):
         Gtk.Box.__init__(self)
         key_label = Gtk.Label(f'<b>{key.upper()}:</b>', halign=Gtk.Align.START, use_markup=True)
         value_label = Gtk.Label(value.capitalize(), halign=Gtk.Align.END)
+        if alternate:
+            value_label.set_markup(f'<i>{value_label.get_text()}</i>')
+            value_label.set_line_wrap(True)
         
         self.pack_start(key_label, expand=True, fill=True, padding=10)
         self.pack_start(value_label, expand=True, fill=True, padding=10)
@@ -18,7 +21,7 @@ class AlbumInfo(Gtk.Box):
         songs = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, halign=Gtk.Align.CENTER)
         for i, title in enumerate(album['songs'], 1):
             songs.add(Info(str(i), title))
-        albumimage = Gtk.Label('image')
+        albumimage = loadalbumimage(album['image'], 'big')
         topbox = Gtk.Box()
         topbox.pack_start(albumimage, expand=True, fill=True, padding=10)
         topbox.pack_start(songs, expand=True, fill=True, padding=10)
@@ -27,7 +30,7 @@ class AlbumInfo(Gtk.Box):
         self.add(Info('artist', album['artist']))
         self.add(Info('date', album['month']+'/'+album['year']))
         self.add(Info('genre', album['genre']))
-        self.add(Info('description', album['description']))
+        self.add(Info('description', album['description'], alternate=True))
         
 
         self.numberinput = Gtk.SpinButton.new_with_range(1, 100, 1)

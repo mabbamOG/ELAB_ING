@@ -5,25 +5,22 @@ from gi.repository import Gtk, GdkPixbuf
 from utilities import loadiconbutton
 
 import signal
+import json
 import albuminfo
+from album import ListAlbum,GridAlbum
 import cart
 
 
 
-class GridAlbum(Gtk.Box):
-    def __init__(self, id, name, artist, year, image):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
-        self.add(Gtk.Label(image))
-        self.add(Gtk.Label(name))
-        self.add(Gtk.Label(artist))
-        self.add(Gtk.Label(year))
+        
 
 
 class Catalogo(Gtk.ScrolledWindow):
-    def __init__(self, database):
+    def __init__(self, database, shopping_cart):
+        self.shopping_cart = shopping_cart
         self.database = database
         Gtk.ScrolledWindow.__init__(self)
-        catalogo = Gtk.FlowBox(max_children_per_line=5, min_children_per_line=2, orientation=Gtk.Orientation.HORIZONTAL, selection_mode=Gtk.SelectionMode.NONE)
+        catalogo = Gtk.FlowBox(homogeneous=True, max_children_per_line=5, min_children_per_line=2, orientation=Gtk.Orientation.HORIZONTAL, selection_mode=Gtk.SelectionMode.NONE)
         for id, album in database.items():
             item = GridAlbum(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
             but = Gtk.Button()
@@ -38,13 +35,19 @@ class Catalogo(Gtk.ScrolledWindow):
         infowindow =  albuminfo.Window(self.database[widget.id])
         result = infowindow.run()
         print(f'added to cart {result} copies for the album {widget.id}')
+        if result >0:
+            old_amount = self.shopping_cart.get(widget.id, 0)
+            self.shopping_cart[widget.id] = old_amount + result
 
 
 
 
 class Window(Gtk.Window):
-    def __init__(self):
+    def __init__(self, album_database, shopping_cart):
         Gtk.Window.__init__(self, title="Music Market", border_width=10, default_width=300, default_height=300)
+
+        self.album_database = album_database
+        self.shopping_cart = shopping_cart
 
         # handle titlebar
         self.titlebar = Gtk.HeaderBar(title="Music Market", subtitle="like Amazon but for music", show_close_button=True)
@@ -55,7 +58,7 @@ class Window(Gtk.Window):
         refresh_button = loadiconbutton('refresh','white')
         refresh_button.connect('clicked', self.on_refresh)
         cart_button = loadiconbutton('shopping-cart', 'white')
-        cart_button.connect('clicked', self.on_click_cart)
+        cart_button.connect('clicked', self.on_view_cart)
         login_button = loadiconbutton('sign-in', 'white')
         self.search = Gtk.SearchEntry(text='search here')
         #self.search.connect...
@@ -75,12 +78,12 @@ class Window(Gtk.Window):
         self.titlebar.pack_start(search_selector)
 
         # handle content
-        album_database = { str(i):{'name':'Amerikkas Most Wanted', 'artist':'Ice Cube', 'year':'2009', 'month':'12', 'image':str(i), 'genre':'rap', 'description':'such cool stuff from Ice Cube!', 'songs':['A','B','C'], 'price':'14.99' } for i in range(200)}
-        self.add(Catalogo(album_database))
+        # album_database = { str(i):{'name':'Amerikkas Most Wanted', 'artist':'Ice Cube', 'year':'2009', 'month':'12', 'image':str(i), 'genre':'rap', 'description':'such cool stuff from Ice Cube!', 'songs':['A','B','C'], 'price':'14.99' } for i in range(200)}
+        self.add(Catalogo(self.album_database, self.shopping_cart))
         
-    def on_click_cart(self, widget):
+    def on_view_cart(self, widget):
         print('redirecting to cart...')
-        cartwindow = cart.Window()
+        cartwindow = cart.Window(self.album_database, self.shopping_cart)
         cartwindow.show_all()
 
 
@@ -94,8 +97,12 @@ class Window(Gtk.Window):
 
 
 
+with open('/home/mad/Documents/000/ELAB-ING/database.json') as f:
+    s = f.read()
+    database = json.loads(s)
 
-app = Window()
+shopping_cart = {}
+app = Window(database, shopping_cart)
 app.connect("delete-event", Gtk.main_quit)
 app.show_all()
 signal.signal(signal.SIGINT, signal.SIG_DFL)
