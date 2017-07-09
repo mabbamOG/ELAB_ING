@@ -9,17 +9,24 @@ import json
 import albuminfo
 from album import ListAlbum,GridAlbum
 import cart
+import login
 
 class Catalogo(Gtk.ScrolledWindow):
-    def __init__(self, album_database, shopping_cart):
+    def __init__(self, album_database, shopping_cart, grid=True):
+        Gtk.ScrolledWindow.__init__(self)
         self.shopping_cart = shopping_cart
         self.album_database = album_database
-        Gtk.ScrolledWindow.__init__(self)
-        self.catalogo = Gtk.FlowBox(homogeneous=True, max_children_per_line=5, min_children_per_line=2, orientation=Gtk.Orientation.HORIZONTAL, selection_mode=Gtk.SelectionMode.NONE)
+        if grid:
+            self.catalogo = Gtk.FlowBox(homogeneous=True, max_children_per_line=5, min_children_per_line=2, orientation=Gtk.Orientation.HORIZONTAL, selection_mode=Gtk.SelectionMode.NONE)
+        else:
+            self.catalogo = Gtk.ListBox(selection_mode = Gtk.SelectionMode.NONE)
         self.catalogo.set_sort_func(self.sort_by_name)
         self.catalogo.set_filter_func(self.filter_by_name)
         for id, album in album_database.items():
-            item = GridAlbum(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
+            if grid:
+                item = GridAlbum(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
+            else:
+                item = ListAlbum(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
             but = Gtk.Button()
             but.add(item)
             but.id = id
@@ -68,8 +75,10 @@ class Catalogo(Gtk.ScrolledWindow):
 
 
 class Window(Gtk.Window):
-    def __init__(self, album_database, shopping_cart):
+    def __init__(self, album_database, shopping_cart, account):
         Gtk.Window.__init__(self, title="Music Market", border_width=10, default_width=300, default_height=300)
+        self.connect("delete-event", Gtk.main_quit)
+        self.account = account
 
         self.album_database = album_database
         self.shopping_cart = shopping_cart
@@ -79,12 +88,17 @@ class Window(Gtk.Window):
         self.set_titlebar(self.titlebar)
 
         grid_button = loadiconbutton('th-large','white')
+        grid_button.connect('clicked', self.on_grid_view)
         bars_button = loadiconbutton('bars','white')
+        bars_button.connect('clicked', self.on_list_view)
         refresh_button = loadiconbutton('refresh','white')
         refresh_button.connect('clicked', self.on_refresh)
         cart_button = loadiconbutton('shopping-cart', 'white')
         cart_button.connect('clicked', self.on_view_cart)
-        login_button = loadiconbutton('sign-in', 'white')
+        self.login_button = loadiconbutton('key', 'white')
+        self.login_button.connect('clicked', self.on_login)
+        self.logout_button = loadiconbutton('sign-out','white')
+        self.logout_button.connect('clicked', self.on_logout)
         self.search = Gtk.SearchEntry(placeholder_text='search here', max_length=30)
         self.search.connect('changed', self.on_search)
 
@@ -97,19 +111,47 @@ class Window(Gtk.Window):
         self.titlebar.pack_end(grid_button)
         self.titlebar.pack_end(bars_button)
         self.titlebar.pack_end(cart_button)
-        self.titlebar.pack_end(login_button)
+        self.titlebar.pack_end(self.login_button)
+        self.titlebar.pack_end(self.logout_button)
         self.titlebar.pack_start(refresh_button)
         self.titlebar.pack_start(self.search)
         self.titlebar.pack_start(self.search_selector)
 
         # handle content
-        self.add(Catalogo(self.album_database, self.shopping_cart))
+        self.view = Catalogo(self.album_database, self.shopping_cart)
+        self.add(self.view)
+        self.show_all()
+        self.logout_button.hide()
         
+    def on_grid_view(self, widget):
+        self.remove(self.view)
+        self.view = Catalogo(self.album_database, self.shopping_cart, grid=True)
+        self.view.show_all()
+        self.add(self.view)
+
+    def on_list_view(self, widget):
+        self.remove(self.view)
+        self.view = Catalogo(self.album_database, self.shopping_cart, grid=False)
+        self.view.show_all()
+        self.add(self.view)
+
+
     def on_view_cart(self, widget):
         print('redirecting to cart...')
         cartwindow = cart.Window(self.album_database, self.shopping_cart)
         cartwindow.show_all()
 
+    def on_login(self, widget):
+        print('logging in...')
+        loginwindow = login.Window(self.account)
+        self.login_button.hide()
+        self.logout_button.show()
+
+    def on_logout(self, widget):
+        print('logging out..')
+        self.account = {}
+        self.login_button.show()
+        self.logout_button.hide()
 
     def on_refresh(self, widget):
         print('refreshing catalogue...')
@@ -125,6 +167,7 @@ class Window(Gtk.Window):
         mode = self.search_selector.get_active_text()
         self.get_child().update_filter(mode, text)
 
+
         
 
 
@@ -135,8 +178,7 @@ with open('/home/mad/Documents/000/ELAB-ING/database.json') as f:
     database = json.loads(s)
 
 shopping_cart = {}
-app = Window(database, shopping_cart)
-app.connect("delete-event", Gtk.main_quit)
-app.show_all()
+account = {}
+app = Window(database, shopping_cart, account)
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 Gtk.main()
