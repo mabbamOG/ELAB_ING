@@ -7,7 +7,7 @@ class Info(Gtk.Box):
     def __init__(self, key, value, alternate=False):
         Gtk.Box.__init__(self)
         key_label = Gtk.Label(f'<b>{key.upper()}:</b>', halign=Gtk.Align.START, use_markup=True)
-        value_label = Gtk.Label(value.capitalize(), halign=Gtk.Align.END)
+        value_label = Gtk.Label(value, halign=Gtk.Align.END)
         if alternate:
             value_label.set_markup(f'<i>{value_label.get_text()}</i>')
             value_label.set_line_wrap(True)

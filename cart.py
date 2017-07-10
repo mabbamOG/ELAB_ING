@@ -5,16 +5,17 @@ from utilities import loadiconbutton
 import decimal
 from album import ListAlbum
 import purchase
+import login
 
 class Window(Gtk.Window):
-    def __init__(self, album_database, shopping_cart):
+    def __init__(self, album_database, shopping_cart, account):
         Gtk.Window.__init__(self, title='Shopping Cart', border_width=10, default_width=300, default_height=300, modal=True)
         titlebar = Gtk.HeaderBar(title='Shopping Cart', subtitle='your pre-purchase overview', show_close_button=True)
         self.set_titlebar(titlebar)
         self.shopping_cart = shopping_cart
         self.close = False
 
-        content = CartInfo(album_database, self.shopping_cart)
+        content = CartInfo(album_database, self.shopping_cart, account)
         content.errors = False
         self.add(content)
 
@@ -34,10 +35,11 @@ class Window(Gtk.Window):
 
 
 class CartInfo(Gtk.Box):
-    def __init__(self, album_database, shopping_cart):
+    def __init__(self, album_database, shopping_cart, account):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.shopping_cart = shopping_cart
         self.album_database = album_database
+        self.account = account
         # list of cart items
         for key,value in self.shopping_cart.items():
             box = Gtk.Box(homogeneous=False)
@@ -73,12 +75,12 @@ class CartInfo(Gtk.Box):
         # final price and purchase button
         self.total_price = 0
         self.purchase_label = Gtk.Label('', use_markup=True)
+        self.purchase_button = loadiconbutton('usd','black')
+        self.purchase_button.connect('clicked', self.on_purchase)
         self.update_total()
-        purchase_button = loadiconbutton('usd','black')
-        purchase_button.connect('clicked', self.on_purchase)
         purchase_box = Gtk.Box(halign=Gtk.Align.CENTER)
         purchase_box.add(self.purchase_label)
-        purchase_box.add(purchase_button)
+        purchase_box.add(self.purchase_button)
 
         self.add(purchase_box)
 
@@ -86,6 +88,8 @@ class CartInfo(Gtk.Box):
         self.total_price = sum(value*decimal.Decimal(self.album_database[key]['price']) for key,value in self.shopping_cart.items())
         self.purchase_label.set_markup(f'<big><big>TOTAL PRICE: <b>{self.total_price}</b></big></big>')
         print(self.shopping_cart)
+        if not self.shopping_cart:
+            self.purchase_button.set_sensitive(False)
 
 
     def on_change_value(self, widget):
@@ -101,9 +105,13 @@ class CartInfo(Gtk.Box):
     def on_purchase(self, widget):
         print('attempting purchase...')
         if self.shopping_cart:
-            purchasewindow = purchase.Window(self.shopping_cart)
-            purchasewindow.destroy()
-            Gtk.main_quit()
+            if not self.account:
+                print('(side) logging in...')
+                loginwindow = login.Window(self.account)
+            if self.account:
+                purchasewindow = purchase.Window(self.shopping_cart)
+                purchasewindow.destroy()
+                Gtk.main_quit()
         else:
             print('cart is empty!')
 

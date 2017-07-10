@@ -50,13 +50,22 @@ class Catalogo(Gtk.ScrolledWindow):
 
     def filter_by_name(self, child, data=''):
         id = child.get_child().id
-        return data in self.album_database[id]['name']
+        reference = self.album_database[id]['name']
+        if data.islower():
+            reference = reference.lower()
+        return data in reference
     def filter_by_artist(self, child, data=''):
         id = child.get_child().id
-        return data in self.album_database[id]['artist']
+        reference = self.album_database[id]['artist']
+        if data.islower():
+            reference = reference.lower()
+        return data in reference
     def filter_by_song(self, child, data=''):
         id = child.get_child().id
         for song in self.album_database[id]['songs']:
+            if data.islower():
+                song = song.lower()
+            print(song)
             if data in song:
                 return True
         return False
@@ -76,7 +85,7 @@ class Catalogo(Gtk.ScrolledWindow):
 
 class Window(Gtk.Window):
     def __init__(self, album_database, shopping_cart, account):
-        Gtk.Window.__init__(self, title="Music Market", border_width=10, default_width=300, default_height=300)
+        Gtk.Window.__init__(self, title="Music Market", border_width=10, default_width=1000, default_height=600)
         self.connect("delete-event", Gtk.main_quit)
         self.account = account
 
@@ -138,19 +147,22 @@ class Window(Gtk.Window):
 
     def on_view_cart(self, widget):
         print('redirecting to cart...')
-        cartwindow = cart.Window(self.album_database, self.shopping_cart)
+        cartwindow = cart.Window(self.album_database, self.shopping_cart, self.account)
         ok = cartwindow.run()
         cartwindow.destroy()
         if not ok:
             self.on_view_cart(widget)
+        if self.account:
+            self.login_button.hide()
+            self.logout_button.show()
 
-        print(self.shopping_cart)
 
     def on_login(self, widget):
         print('logging in...')
         loginwindow = login.Window(self.account)
-        self.login_button.hide()
-        self.logout_button.show()
+        if self.account:
+            self.login_button.hide()
+            self.logout_button.show()
 
     def on_logout(self, widget):
         print('logging out..')

@@ -123,7 +123,7 @@ class AccountInfo(Gtk.Box):
         if empty_check(self.email_entry, self.email_error): return False
         if empty_check(self.address_entry, self.address_error): return False
         if empty_check(self.country_entry, self.country_error): return False
-        if self.password_entry.get_text() != self.password3_entry.get_text():
+        if self.password_entry.get_text() != self.password2_entry.get_text():
             self.same_password_error.show()
             return False
         else:
