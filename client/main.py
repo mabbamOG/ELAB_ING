@@ -190,7 +190,7 @@ class Window(Gtk.Window):
 
 
 
-with open('/home/mad/Documents/000/ELAB-ING/database.json') as f:
+with open('/home/mad/Documents/000/ELAB-ING/client/database.json') as f:
     s = f.read()
     database = json.loads(s)
 
