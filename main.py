@@ -139,7 +139,12 @@ class Window(Gtk.Window):
     def on_view_cart(self, widget):
         print('redirecting to cart...')
         cartwindow = cart.Window(self.album_database, self.shopping_cart)
-        cartwindow.show_all()
+        ok = cartwindow.run()
+        cartwindow.destroy()
+        if not ok:
+            self.on_view_cart(widget)
+
+        print(self.shopping_cart)
 
     def on_login(self, widget):
         print('logging in...')
@@ -149,7 +154,7 @@ class Window(Gtk.Window):
 
     def on_logout(self, widget):
         print('logging out..')
-        self.account = {}
+        self.account.clear()
         self.login_button.show()
         self.logout_button.hide()
 

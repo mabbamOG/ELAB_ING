@@ -4,14 +4,33 @@ from gi.repository import Gtk, GdkPixbuf
 from utilities import loadiconbutton
 import decimal
 from album import ListAlbum
+import purchase
 
 class Window(Gtk.Window):
     def __init__(self, album_database, shopping_cart):
         Gtk.Window.__init__(self, title='Shopping Cart', border_width=10, default_width=300, default_height=300, modal=True)
         titlebar = Gtk.HeaderBar(title='Shopping Cart', subtitle='your pre-purchase overview', show_close_button=True)
         self.set_titlebar(titlebar)
+        self.shopping_cart = shopping_cart
+        self.close = False
 
-        self.add(CartInfo(album_database, shopping_cart))
+        content = CartInfo(album_database, self.shopping_cart)
+        content.errors = False
+        self.add(content)
+
+    def quit(self, widget, event):
+        Gtk.main_quit()
+        self.close = True
+
+    def run(self):
+        self.show_all()
+        self.connect('delete-event', self.quit)
+        Gtk.main()
+        if not self.shopping_cart or self.close:
+            return True
+        else:
+            return False
+
 
 
 class CartInfo(Gtk.Box):
@@ -22,6 +41,7 @@ class CartInfo(Gtk.Box):
         # list of cart items
         for key,value in self.shopping_cart.items():
             box = Gtk.Box(homogeneous=False)
+            box.add(Gtk.Label(key))
             name = self.album_database[key]['name']
             artist = self.album_database[key]['artist']
             year = self.album_database[key]['year']
@@ -33,11 +53,14 @@ class CartInfo(Gtk.Box):
             amountinput.set_vexpand(False)
             amountinput.set_hexpand(False)
             amountinput.set_value(value)
-            amountinput.connect('value-changed', lambda w: self.on_change_value(w,key))
+            amountinput.id = key
+            amountinput.connect('value-changed', self.on_change_value)
             delete_button = loadiconbutton('trash','black')
             delete_button.set_vexpand(False)
             delete_button.set_hexpand(False)
-            delete_button.connect('clicked', lambda w: self.on_delete_entry(w, key, box))
+            delete_button.id = key
+            delete_button.box = box
+            delete_button.connect('clicked', self.on_delete_entry)
 
             box.add(ListAlbum(key,name,artist,year,image,size='small'))
             box.add(price_label)
@@ -62,21 +85,25 @@ class CartInfo(Gtk.Box):
     def update_total(self):
         self.total_price = sum(value*decimal.Decimal(self.album_database[key]['price']) for key,value in self.shopping_cart.items())
         self.purchase_label.set_markup(f'<big><big>TOTAL PRICE: <b>{self.total_price}</b></big></big>')
-        self.show_all()
+        print(self.shopping_cart)
 
 
-    def on_change_value(self, widget, id):
+    def on_change_value(self, widget):
         new_value = widget.get_value_as_int()
-        self.shopping_cart[id] = new_value
+        self.shopping_cart[widget.id] = new_value
         self.update_total()
 
-    def on_delete_entry(self, widget, id, daddy):
-        del self.shopping_cart[id]
+    def on_delete_entry(self, widget):
+        del self.shopping_cart[widget.id]
         self.update_total()
-        daddy.destroy()
+        widget.box.destroy()
 
     def on_purchase(self, widget):
         print('attempting purchase...')
-        # purchasewindow = purchase.Window()
-        # purchasewindow.show_all()
+        if self.shopping_cart:
+            purchasewindow = purchase.Window(self.shopping_cart)
+            purchasewindow.destroy()
+            Gtk.main_quit()
+        else:
+            print('cart is empty!')
 
