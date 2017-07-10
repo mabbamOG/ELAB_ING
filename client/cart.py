@@ -14,20 +14,19 @@ class Window(Gtk.Window):
         self.set_titlebar(titlebar)
         self.shopping_cart = shopping_cart
         self.close = False
-
-        content = CartInfo(album_database, self.shopping_cart, account)
-        content.errors = False
-        self.add(content)
+        self.add(CartInfo(album_database, self.shopping_cart, account))
+        self.get_child().errors = False
 
     def quit(self, widget, event):
-        Gtk.main_quit()
         self.close = True
+        Gtk.main_quit()
 
     def run(self):
         self.show_all()
         self.connect('delete-event', self.quit)
+        print(f'child is {self.get_child()}')
         Gtk.main()
-        if not self.shopping_cart or self.close:
+        if self.close or (not self.shopping_cart and not self.get_child().errors):
             return True
         else:
             return False
@@ -37,6 +36,7 @@ class Window(Gtk.Window):
 class CartInfo(Gtk.Box):
     def __init__(self, album_database, shopping_cart, account):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
+        self.errors = False
         self.shopping_cart = shopping_cart
         self.album_database = album_database
         self.account = account
@@ -109,6 +109,7 @@ class CartInfo(Gtk.Box):
                 loginwindow = login.Window(self.account)
             if self.account:
                 purchasewindow = purchase.Window(self.shopping_cart)
+                self.errors = purchasewindow.errors
                 purchasewindow.destroy()
                 Gtk.main_quit()
         else:

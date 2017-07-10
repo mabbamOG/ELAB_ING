@@ -10,6 +10,7 @@ import albuminfo
 from album import ListAlbum,GridAlbum
 import cart
 import login
+import network
 
 class Catalogo(Gtk.ScrolledWindow):
     def __init__(self, album_database, shopping_cart, grid=True):
@@ -172,11 +173,13 @@ class Window(Gtk.Window):
 
     def on_refresh(self, widget):
         print('refreshing catalogue...')
-        None # loady thingy
-        album_database = None 
+        conn = network.Network('localhost',9999)
+        d = conn.refresh()
+        self.album_database.clear()
+        self.album_database.update(d)
         self.get_child().destroy()
-        self.add(Catalogo(album_database))
-        self.show_all()
+        self.add(Catalogo(self.album_database, self.shopping_cart))
+        self.get_child().show_all()
 
     def on_search(self, widget):
         text = self.search.get_text()
@@ -184,18 +187,11 @@ class Window(Gtk.Window):
         mode = self.search_selector.get_active_text()
         self.get_child().update_filter(mode, text)
 
-
-        
-
-
-
-
-with open(f'{scriptpath}/database.json') as f:
-    s = f.read()
-    database = json.loads(s)
-
-shopping_cart = {}
-account = {}
-app = Window(database, shopping_cart, account)
-signal.signal(signal.SIGINT, signal.SIG_DFL)
-Gtk.main()
+if __name__ == '__main__':
+    conn = network.Network('localhost',9999)
+    database = conn.refresh()
+    shopping_cart = {}
+    account = {}
+    app = Window(database, shopping_cart, account)
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+    Gtk.main()

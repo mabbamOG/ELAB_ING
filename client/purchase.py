@@ -2,6 +2,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
 from utilities import loadiconbutton
+import network
 
 class Window(Gtk.Window):
     def __init__(self, shopping_cart):
@@ -12,33 +13,42 @@ class Window(Gtk.Window):
         self.show_all()
         self.connect('delete-event', Gtk.main_quit)
         Gtk.main()
+        self.errors = self.get_child().errors
 
 
 class PaymentInfo(Gtk.Box):
     def __init__(self, shopping_cart):
         Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL)
         self.shopping_cart = shopping_cart
+        self.errors = False
 
-        purchase_methods = Gtk.ComboBoxText()
-        purchase_methods.append_text('CARTA DI CREDITO')
-        purchase_methods.append_text('BANCOMAT')
-        purchase_methods.append_text('PAYPAL')
-        purchase_methods.set_active(0)
-        shipping_methods = Gtk.ComboBoxText()
-        shipping_methods.append_text('POSTA')
-        shipping_methods.append_text('CORRIERE')
-        shipping_methods.set_active(0)
+        self.purchase_methods = Gtk.ComboBoxText()
+        self.purchase_methods.append_text('CREDIT CART')
+        self.purchase_methods.append_text('BANCOMAT')
+        self.purchase_methods.append_text('PAYPAL')
+        self.purchase_methods.set_active(0)
+        self.shipping_methods = Gtk.ComboBoxText()
+        self.shipping_methods.append_text('POST')
+        self.shipping_methods.append_text('COURIER')
+        self.shipping_methods.set_active(0)
         pay_button = loadiconbutton('arrow-circle-o-right', 'black')
         pay_button.connect('clicked', self.on_pay)
 
         self.add(Gtk.Label('PURCHASE METHOD:'))
-        self.add(purchase_methods)
+        self.add(self.purchase_methods)
         self.add(Gtk.Label('SHIPPING METHOD:'))
-        self.add(shipping_methods)
+        self.add(self.shipping_methods)
         self.add(pay_button)
 
     def on_pay(self, widget):
+        data = {'cart':self.shopping_cart.copy(), 'purchase_method':self.purchase_methods.get_active_text(), 'shipping_method':self.shipping_methods.get_active_text()}
+        conn = network.Network('localhost', 9999)
+        pay_ok = conn.pay(data)
         self.shopping_cart.clear()
-        if network:
-            self.shopping_cart.update(network)
+        if not pay_ok:
+            print('purchase not ok')
+            self.errors = True
+            self.shopping_cart.update(data['cart'])
+        else:
+            print('purchase ok')
         Gtk.main_quit()

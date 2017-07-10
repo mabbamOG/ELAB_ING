@@ -1,6 +1,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
+import network
 from utilities import loadiconbutton
 
 class GetInfo(Gtk.Box):
@@ -147,8 +148,13 @@ class AccountInfo(Gtk.Box):
         self.on_toggle_register(self.checkbutton)
         check_ok = self.login_checks()
         if check_ok:
-            self.account['username'] = self.user_entry.get_text()
-            Gtk.main_quit()
+            data = {'username':self.user_entry.get_text(), 'password': self.password_entry.get_text()}
+            conn = network.Network('localhost', 9999)
+            login_ok = conn.login(data)
+            if login_ok:
+                self.account['username'] = self.user_entry.get_text()
+                print(f'login with {self.account}')
+                Gtk.main_quit()
 
     def on_register(self, widget):
         self.on_login(widget)
@@ -157,7 +163,17 @@ class AccountInfo(Gtk.Box):
             self.on_toggle_register(self.checkbutton)
             check_ok = self.register_checks()
             if check_ok:
-                self.account['username'] = self.user_entry.get_text()
-                Gtk.main_quit()
+                data = {'username':self.user_entry.get_text(), 'password':self.password_entry.get_text()}
+                data['password2'] = self.password2_entry.get_text()
+                data['name'] =  self.name_entry.get_text()
+                data['email'] = self.email_entry.get_text()
+                data['address'] = self.address_entry.get_text()
+                data['country'] =  self.country_entry.get_text()
+                conn = network.Network('localhost', 9999)
+                register_ok = conn.register(data)
+                if register_ok:
+                    self.account['username'] = self.user_entry.get_text()
+                    print(f'register with {self.account}')
+                    Gtk.main_quit()
 
 

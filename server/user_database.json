@@ -1,0 +1,20 @@
+{
+ "bob": {
+  "address": "b",
+  "country": "b",
+  "email": "b",
+  "name": "b",
+  "password": "bobby",
+  "password2": "bobby",
+  "username": "bob"
+ },
+ "marioo": {
+  "address": "m",
+  "country": "m",
+  "email": "m",
+  "name": "m",
+  "password": "mario",
+  "password2": "mario",
+  "username": "marioo"
+ }
+}
