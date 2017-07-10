@@ -2,7 +2,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
-from utilities import loadiconbutton
+from utilities import loadiconbutton,scriptpath
 
 import signal
 import json
@@ -190,7 +190,7 @@ class Window(Gtk.Window):
 
 
 
-with open('/home/mad/Documents/000/ELAB-ING/client/database.json') as f:
+with open(f'{scriptpath}/database.json') as f:
     s = f.read()
     database = json.loads(s)
 
