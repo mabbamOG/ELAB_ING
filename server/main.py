@@ -41,8 +41,10 @@ class Server(socketserver.BaseRequestHandler):
         pass
 
     def on_register(self):
+		# cliente stesso id
+		# codice fiscale
         pass
-    
+
     def on_purchase(self):
         pass
 

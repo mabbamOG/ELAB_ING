@@ -43,7 +43,6 @@ class CartInfo(Gtk.Box):
         # list of cart items
         for key,value in self.shopping_cart.items():
             box = Gtk.Box(homogeneous=False)
-            box.add(Gtk.Label(key))
             name = self.album_database[key]['name']
             artist = self.album_database[key]['artist']
             year = self.album_database[key]['year']
@@ -114,4 +113,3 @@ class CartInfo(Gtk.Box):
                 Gtk.main_quit()
         else:
             print('cart is empty!')
-
