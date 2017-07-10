@@ -1,4 +1,5 @@
 import socketserver
+import osZZk
 
 class Server(socketserver.BaseRequestHandler):
     """
@@ -9,18 +10,32 @@ class Server(socketserver.BaseRequestHandler):
     client.
     """
 
+    def __init__(self):
+        socketserver.BaseRequestHandler.__init__()
+
+    def load_db(self):
+        with open('
+
+
+
     def handle(self):
         self.clientip = self.client_address[0]
         print(f'connected to {clientip}')
         self.fin, self.fout = self.rfile, self.wfile
         cmd = fin.readline().strip()
-        if cmd in ['']:
-            pass
-
-        # self.wfile.write(self.data.upper())
+        if cmd == 'refresh':
+            self.on_refresh
+        elif cmd == 'login':
+            self.on_login
+        elif cmd == 'register':
+            self.on_register
+        elif cmd == 'buy':
+            self.on_purchase
+        else:
+            raise 'error: server could not handle!'
 
     def on_refresh(self):
-        pass
+
 
     def on_login(self):
         pass
@@ -33,6 +48,8 @@ class Server(socketserver.BaseRequestHandler):
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 9999
+    with open('/home/mad/Documents/000/ELAB-ING/client/database.json') as f:
+        database = json.loads(f.read())
 
     # Create the server, binding to localhost on port 9999
     with socketserver.TCPServer((HOST, PORT), MyTCPHandler) as server:
