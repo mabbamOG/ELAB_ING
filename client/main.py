@@ -7,7 +7,7 @@ from utilities import loadiconbutton,scriptpath
 import signal
 import json
 import albuminfo
-from album import ListAlbum,GridAlbum
+from album import AlbumFactory
 import cart
 import login
 import network
@@ -23,11 +23,12 @@ class Catalogo(Gtk.ScrolledWindow):
             self.catalogo = Gtk.ListBox(selection_mode = Gtk.SelectionMode.NONE)
         self.catalogo.set_sort_func(self.sort_by_name)
         self.catalogo.set_filter_func(self.filter_by_name)
+        factory = AlbumFactory()
         for id, album in album_database.items():
             if grid:
-                item = GridAlbum(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
+                item = factory.get_grid_album(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
             else:
-                item = ListAlbum(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
+                item = factory.get_list_album(id, image=album['image'], name=album['name'], artist=album['artist'], year=album['year'])
             but = Gtk.Button()
             but.add(item)
             but.id = id

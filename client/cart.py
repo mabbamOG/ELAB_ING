@@ -3,7 +3,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
 from utilities import loadiconbutton
 import decimal
-from album import ListAlbum
+from album import AlbumFactory
 import purchase
 import login
 
@@ -41,6 +41,7 @@ class CartInfo(Gtk.Box):
         self.album_database = album_database
         self.account = account
         # list of cart items
+        factory = AlbumFactory()
         for key,value in self.shopping_cart.items():
             box = Gtk.Box(homogeneous=False)
             name = self.album_database[key]['name']
@@ -63,7 +64,7 @@ class CartInfo(Gtk.Box):
             delete_button.box = box
             delete_button.connect('clicked', self.on_delete_entry)
 
-            box.add(ListAlbum(key,name,artist,year,image,size='small'))
+            box.add(factory.get_list_album(key,name,artist,year,image,size='small'))
             box.add(price_label)
             box.add(amountinput)
             box.add(delete_button)
