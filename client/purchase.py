@@ -12,8 +12,8 @@ class Window(Gtk.Window):
         self.add(PaymentInfo(shopping_cart))
         self.show_all()
         self.connect('delete-event', Gtk.main_quit)
-        Gtk.main()
         self.errors = self.get_child().errors
+        Gtk.main()
 
 
 class PaymentInfo(Gtk.Box):

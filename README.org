@@ -1,4 +1,21 @@
 * current status
-[[./screens/main_window.png]]
-[[./screens/album_window.png]]
-[[./screens/cart_window.png]]
+** main grid view
+[[./screens/1.png]]
+** main list view
+[[./screens/2.png]]
+** album search example
+[[./screens/3.png]]
+** artist search example
+[[./screens/4.png]]
+** empty shopping cart
+[[./screens/5.png]]
+** album info view
+[[./screens/6.png]]
+** shopping cart
+[[./screens/7.png]]
+** login
+[[./screens/8.png]]
+** register
+[[./screens/9.png]]
+** purchase
+[[./screens/10.png]]
