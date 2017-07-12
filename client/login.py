@@ -9,9 +9,9 @@ class GetInfo(Gtk.Box):
         Gtk.Box.__init__(self)
         self.add(Gtk.Label(label, hexpand=True, halign=Gtk.Align.CENTER))
         if password == False:
-            self.entry = Gtk.Entry()
+            self.entry = Gtk.Entry(max_length=30)
         else:
-            self.entry = Gtk.Entry(hexpand=False, halign=Gtk.Align.CENTER, caps_lock_warning=True, visibility=False)
+            self.entry = Gtk.Entry(max_length=30, hexpand=False, halign=Gtk.Align.CENTER, caps_lock_warning=True, visibility=False)
         self.add(self.entry)
 
 class Window(Gtk.Window):
